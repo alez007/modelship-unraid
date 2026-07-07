@@ -8,27 +8,30 @@ This repo just holds the template XML — the application itself lives in the ma
 
 Unraid removed the OS-level "Template Repositories" setting in 6.10.0 (per Squid, the Community Applications plugin developer: *"The Template Repositories section of the OS is now removed in 6.10.0+. It is not coming back."*). There is no field anywhere where you paste this repo's URL and its template just shows up — that mechanism doesn't exist anymore. Instead, install the template file itself, manually, using one of these:
 
-Grab the raw XML: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship.xml`
+There are two separate templates — grab whichever variant(s) you want (see [GPU vs CPU-only](#gpu-vs-cpu-only) below):
+
+- GPU: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship.xml`
+- CPU-only: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship-cpu.xml`
 
 **Option A — plain Docker (no plugin needed):**
 
-1. Save it as `modelship.xml` in `/boot/config/plugins/dockerMan/templates-user/` on your Unraid box (Unraid's built-in File Manager, or `wget` over SSH into that folder).
-2. Docker tab → **Add Container** → **Template** dropdown → `modelship` is now listed.
+1. Save the XML file(s) into `/boot/config/plugins/dockerMan/templates-user/` on your Unraid box (Unraid's built-in File Manager, or `wget` over SSH into that folder) — keep the filenames as-is.
+2. Docker tab → **Add Container** → **Template** dropdown → `modelship` and/or `modelship-cpu` are now listed.
 
 **Option B — Community Applications "Private" templates (if you have the CA plugin):**
 
-Save the same XML instead to `/boot/config/plugins/community.applications/private/<your-username>/modelship.xml`. It'll show up under Apps → search, tagged "Private" — same manual copy, just a bit more integrated with the CA browsing UI.
+Save the same XML file(s) instead to `/boot/config/plugins/community.applications/private/<your-username>/`. They'll show up under Apps → search, tagged "Private" — same manual copy, just a bit more integrated with the CA browsing UI.
 
 Either way this is local to your box only — it does **not** make the template discoverable by other Unraid users. That requires actually submitting it to the official CA index for review (a forum post or PR to [Squidly271/community.applications](https://github.com/Squidly271/community.applications)), which is a separate, out-of-scope step from this repo.
 
 ## GPU vs CPU-only
 
-This is a single template (`modelship`) that offers **two image tags** via Unraid's tag/branch selector — a dropdown CA shows once you pick the template, before you fill in the rest of the form:
+There are two separate templates, so the right one is picked directly from the Add Container Template dropdown — no post-install editing needed:
 
-- **`latest`** (default) — GPU build, needs the NVIDIA Driver plugin and NVIDIA Container Toolkit set up on your Unraid box.
-- **`latest-cpu`** — CPU-only build, works on any box (amd64 or arm64), no GPU needed.
+- **`modelship`** — GPU image (`ghcr.io/alez007/modelship:latest`), needs the NVIDIA Driver plugin and NVIDIA Container Toolkit set up on your Unraid box. `Extra Parameters` includes `--runtime=nvidia`.
+- **`modelship-cpu`** — CPU-only image (`ghcr.io/alez007/modelship:latest-cpu`), works on any box (amd64 or arm64, including Apple Silicon hosts), no GPU or NVIDIA Container Toolkit needed. `Extra Parameters` has no `--runtime=nvidia`, and the `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES` variables are dropped entirely.
 
-**Important limitation:** tag selection only swaps the image tag — it can't conditionally change Extra Parameters or hide/show variables. If you pick `latest-cpu`, you must also manually remove `--runtime=nvidia` from **Extra Parameters** (toggle **Advanced View** in Add Container) before creating the container, or it'll fail to start (Docker errors out immediately if `--runtime=nvidia` is set but the NVIDIA runtime isn't registered). The `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES` variables are harmless no-ops on the CPU tag and can be left alone or removed — only `--runtime=nvidia` actually breaks things.
+**Why two templates instead of one with a tag picker:** Unraid templates do support a `<Branch>`/tag-selector mechanism for offering multiple image tags from one template, but it only swaps the image tag — it can't conditionally change `Extra Parameters` or hide/show variables based on which tag is picked. `--runtime=nvidia` is a Docker *container-creation* flag, not something the image itself controls: it tells the Docker daemon to use a runtime named `nvidia`, which only exists if the NVIDIA Container Toolkit registered it. Without that toolkit, Docker refuses to even create the container (`unknown or invalid runtime name: nvidia`) — regardless of which image tag you picked. A single tag-picker template would need everyone selecting the CPU tag to also remember to manually delete `--runtime=nvidia` from Extra Parameters first, or the "CPU-only, no GPU needed" install would break immediately. Two templates avoid that footgun entirely — each one's `Extra Parameters` is correct by default for its own hardware target.
 
 ## Before you start the container
 
@@ -63,7 +66,7 @@ There's no universal "correct" number — it scales with your box's RAM and what
 This template keeps the Config surface intentionally small — enough to get a working single-container deployment without needing to understand Ray, state stores, or gateway replicas:
 
 - **Always visible**: API port, models.yaml path, model cache path, `HF_TOKEN`.
-- **Advanced**: metrics port + toggle, `MSHIP_API_KEYS`, `MSHIP_LOG_LEVEL`, and `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES` (relevant on the `latest` GPU tag; no-ops on `latest-cpu`).
+- **Advanced**: metrics port + toggle, `MSHIP_API_KEYS`, `MSHIP_LOG_LEVEL`, and (GPU template only) `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES`.
 - **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store (Redis/file), OpenTelemetry export, syslog log target/format, existing-Ray-cluster attach, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. Plugin backends (Kokoro ONNX, Orpheus, whisper.cpp) need no container-level config at all — they're pulled in automatically based on what your `models.yaml` references.
 
 ## Icon

@@ -3,21 +3,13 @@
   <Name>modelship</Name>
   <Repository>ghcr.io/alez007/modelship:latest</Repository>
   <Registry>https://ghcr.io/alez007/modelship</Registry>
-  <Branch>
-    <Tag>latest</Tag>
-    <TagDescription>Default: GPU build. Requires the NVIDIA Driver plugin + NVIDIA Container Toolkit set up on this Unraid box.</TagDescription>
-  </Branch>
-  <Branch>
-    <Tag>latest-cpu</Tag>
-    <TagDescription>CPU-only build. Works on any box (amd64 or arm64), no GPU needed -- BUT you must also remove "--runtime=nvidia" from Extra Parameters (Advanced View) after picking this tag, or the container will fail to start. The NVIDIA_VISIBLE_DEVICES / NVIDIA_DRIVER_CAPABILITIES variables below are harmless no-ops on this tag and can be left alone or removed.</TagDescription>
-  </Branch>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
   <Support>https://github.com/alez007/modelship/issues</Support>
   <Project>https://github.com/alez007/modelship</Project>
-  <Overview>Self-hosted, OpenAI-compatible inference for the agentic era. Modelship runs your whole AI stack -- reasoning LLMs with universal tool calling, embeddings, speech-to-text, text-to-speech, and image generation -- as multiple models sharing your GPUs (or CPU) behind a single OpenAI-compatible gateway. Built on Ray Serve with pluggable backends (vLLM, llama.cpp, Diffusers, plugins).&#10;&#10;This template offers two image tags -- pick one from the tag/branch selector shown when adding the container. Default ("latest") is the GPU build, needing the NVIDIA Driver plugin + NVIDIA Container Toolkit. "latest-cpu" runs on any box, no GPU needed -- but if you pick it, you MUST also remove "--runtime=nvidia" from Extra Parameters (Advanced View) yourself, since tag selection can't do that automatically; the NVIDIA_VISIBLE_DEVICES / NVIDIA_DRIVER_CAPABILITIES variables are harmless no-ops on that tag either way.&#10;&#10;IMPORTANT: create your models.yaml at the path below BEFORE starting the container -- it will not start without one. See https://github.com/alez007/modelship/blob/main/docs/model-configuration.md and https://github.com/alez007/modelship/tree/main/config/examples for the format and ready-made examples.&#10;&#10;IMPORTANT: the default --shm-size=2g in Extra Parameters is sized only for a single small quick-start model. Ray sizes its object store to roughly 30% of the RAM it sees as available AT STARTUP -- if --shm-size is smaller than that, Ray crashes immediately. Raise --shm-size (roughly 30% of the RAM you want to give modelship) for bigger or multi-model / GPU stacks.</Overview>
+  <Overview>Self-hosted, OpenAI-compatible inference for the agentic era. Modelship runs your whole AI stack -- reasoning LLMs with universal tool calling, embeddings, speech-to-text, text-to-speech, and image generation -- as multiple models sharing your GPUs behind a single OpenAI-compatible gateway. Built on Ray Serve with pluggable backends (vLLM, llama.cpp, Diffusers, plugins).&#10;&#10;This is the GPU variant, and requires the NVIDIA Driver plugin + NVIDIA Container Toolkit set up on this Unraid box. For a CPU-only host, use the separate "modelship-cpu" template instead.&#10;&#10;IMPORTANT: create your models.yaml at the path below BEFORE starting the container -- it will not start without one. See https://github.com/alez007/modelship/blob/main/docs/model-configuration.md and https://github.com/alez007/modelship/tree/main/config/examples for the format and ready-made examples.&#10;&#10;IMPORTANT: the default --shm-size=2g in Extra Parameters is sized only for a single small quick-start model. Ray sizes its object store to roughly 30% of the RAM it sees as available AT STARTUP -- if --shm-size is smaller than that, Ray crashes immediately. Raise --shm-size (roughly 30% of the RAM you want to give modelship) for bigger or multi-model / GPU stacks.</Overview>
   <Category>AI:</Category>
   <WebUI>http://[IP]:[PORT:8000]/</WebUI>
   <TemplateURL/>
@@ -28,7 +20,7 @@
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Requires>Default tag ("latest") needs the NVIDIA Driver plugin and NVIDIA Container Toolkit. If you pick the "latest-cpu" tag instead, remove "--runtime=nvidia" from Extra Parameters (Advanced View) -- tag selection alone can't do this for you.</Requires>
+  <Requires>GPU variant -- needs the NVIDIA Driver plugin and NVIDIA Container Toolkit. For CPU-only hosts, use the "modelship-cpu" template instead.</Requires>
   <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp" Description="OpenAI-compatible API port (chat completions, embeddings, STT, TTS, images)" Type="Port" Display="always" Required="true" Mask="false">8000</Config>
   <Config Name="Metrics Port" Target="8079" Default="8079" Mode="tcp" Description="Prometheus metrics scrape port (Ray cluster, Ray Serve, vLLM, and modelship:* metrics). Only useful if Metrics Enabled is true." Type="Port" Display="advanced" Required="false" Mask="false">8079</Config>
   <Config Name="Models Config" Target="/modelship/config/models.yaml" Default="/mnt/user/appdata/modelship/models.yaml" Mode="rw" Description="Your models.yaml defining which models to run, on GPU or CPU. MUST exist before first start or the container will exit. See docs/model-configuration.md and config/examples/ in the modelship repo for the format." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/modelship/models.yaml</Config>

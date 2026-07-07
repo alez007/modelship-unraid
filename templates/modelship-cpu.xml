@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>modelship-cpu</Name>
+  <Repository>ghcr.io/alez007/modelship:latest-cpu</Repository>
+  <Registry>https://ghcr.io/alez007/modelship</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/alez007/modelship/issues</Support>
+  <Project>https://github.com/alez007/modelship</Project>
+  <Overview>Self-hosted, OpenAI-compatible inference for the agentic era. Modelship runs your whole AI stack -- reasoning LLMs with universal tool calling, embeddings, speech-to-text, text-to-speech, and image generation -- as multiple models sharing your CPU behind a single OpenAI-compatible gateway. Built on Ray Serve with pluggable backends (llama.cpp, vLLM, Diffusers, plugins).&#10;&#10;This is the CPU-only variant -- no GPU or NVIDIA Container Toolkit needed, works on any box (amd64 or arm64, including Apple Silicon hosts). For GPU support instead, use the separate "modelship" template.&#10;&#10;IMPORTANT: create your models.yaml at the path below BEFORE starting the container -- it will not start without one. See https://github.com/alez007/modelship/blob/main/docs/model-configuration.md and https://github.com/alez007/modelship/tree/main/config/examples for the format and ready-made examples.&#10;&#10;IMPORTANT: the default --shm-size=2g in Extra Parameters is sized only for a single small quick-start model. Ray sizes its object store to roughly 30% of the RAM it sees as available AT STARTUP -- if --shm-size is smaller than that, Ray crashes immediately. Raise --shm-size (roughly 30% of the RAM you want to give modelship) for bigger or multi-model stacks.</Overview>
+  <Category>AI:</Category>
+  <WebUI>http://[IP]:[PORT:8000]/</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/alez007/modelship-unraid/main/icon.svg</Icon>
+  <ExtraParams>--shm-size=2g -e MSHIP_UID=99 -e MSHIP_GID=100</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires>CPU-only -- runs on any Unraid box, no GPU or NVIDIA Container Toolkit needed.</Requires>
+  <Config Name="WebUI Port" Target="8000" Default="8000" Mode="tcp" Description="OpenAI-compatible API port (chat completions, embeddings, STT, TTS, images)" Type="Port" Display="always" Required="true" Mask="false">8000</Config>
+  <Config Name="Metrics Port" Target="8079" Default="8079" Mode="tcp" Description="Prometheus metrics scrape port (Ray cluster, Ray Serve, vLLM, and modelship:* metrics). Only useful if Metrics Enabled is true." Type="Port" Display="advanced" Required="false" Mask="false">8079</Config>
+  <Config Name="Models Config" Target="/modelship/config/models.yaml" Default="/mnt/user/appdata/modelship/models.yaml" Mode="rw" Description="Your models.yaml defining which models to run on CPU. MUST exist before first start or the container will exit. See docs/model-configuration.md and config/examples/ in the modelship repo for the format." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/modelship/models.yaml</Config>
+  <Config Name="Model Cache" Target="/.cache" Default="/mnt/user/appdata/modelship/cache" Mode="rw" Description="Persistent cache for downloaded model weights (HuggingFace, vLLM, plugins). Keep this outside the container so weights survive updates/restarts." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/modelship/cache</Config>
+  <Config Name="HF_TOKEN" Target="HF_TOKEN" Default="" Mode="" Description="HuggingFace access token, required only for gated models (e.g. Llama, Gemma, Mistral variants)." Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="MSHIP_API_KEYS" Target="MSHIP_API_KEYS" Default="" Mode="" Description="Comma-separated API keys clients must send as 'Authorization: Bearer &lt;key&gt;'. Leave empty to disable auth (fine for a LAN-only deployment)." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="MSHIP_LOG_LEVEL" Target="MSHIP_LOG_LEVEL" Default="INFO" Mode="" Description="Log verbosity: TRACE, DEBUG, INFO, or WARNING." Type="Variable" Display="advanced" Required="false" Mask="false">INFO</Config>
+  <Config Name="MSHIP_METRICS" Target="MSHIP_METRICS" Default="true" Mode="" Description="Enable Prometheus metrics on the Metrics Port. Set to false to disable." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+</Container>

@@ -1,19 +1,24 @@
 # modelship-unraid
 
-Unraid Community Applications (CA) template for [modelship](https://github.com/alez007/modelship) — a self-hosted, OpenAI-compatible inference server (chat/reasoning, embeddings, STT, TTS, image generation) built on Ray Serve, with pluggable vLLM / llama.cpp / Diffusers backends.
+Unraid Docker template for [modelship](https://github.com/alez007/modelship) — a self-hosted, OpenAI-compatible inference server (chat/reasoning, embeddings, STT, TTS, image generation) built on Ray Serve, with pluggable vLLM / llama.cpp / Diffusers backends.
 
-This repo just holds the CA template XML — the application itself lives in the main [modelship](https://github.com/alez007/modelship) repo.
+This repo just holds the template XML — the application itself lives in the main [modelship](https://github.com/alez007/modelship) repo.
 
 ## Installing
 
-This is a built-in Unraid Docker feature, not part of the Community Applications plugin's own settings. The stock **Add Container** form's Template field is just a dropdown of templates Unraid already knows about — you can't paste a raw URL into it directly, so you add the repo once and the template appears in that dropdown afterward:
+Unraid removed the OS-level "Template Repositories" setting in 6.10.0 (per Squid, the Community Applications plugin developer: *"The Template Repositories section of the OS is now removed in 6.10.0+. It is not coming back."*). There is no field anywhere where you paste this repo's URL and its template just shows up — that mechanism doesn't exist anymore. Instead, install the template file itself, manually, using one of these:
 
-1. Unraid → **Settings** → **Docker** → **Template Repositories** field.
-2. Add: `alez007/modelship-unraid` (or the full `https://github.com/alez007/modelship-unraid` URL).
-3. Save/apply. The `modelship` template now shows up under Docker → **Add Container** → Template dropdown.
+**Option A — plain Docker (no plugin needed):**
 
-If you have the **Community Applications** plugin installed, its own Apps page also has a direct "paste a template URL" install option — point it at:
-`https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship.xml`
+1. Grab the raw XML: `https://raw.githubusercontent.com/alez007/modelship-unraid/main/templates/modelship.xml`
+2. Save it as `modelship.xml` in `/boot/config/plugins/dockerMan/templates-user/` on your Unraid box (Unraid's built-in File Manager, or `wget` over SSH into that folder).
+3. Docker tab → **Add Container** → **Template** dropdown → `modelship` is now listed.
+
+**Option B — Community Applications "Private" templates (if you have the CA plugin):**
+
+Save the same XML instead to `/boot/config/plugins/community.applications/private/<your-username>/modelship.xml`. It'll show up under Apps → search, tagged "Private" — same manual copy, just a bit more integrated with the CA browsing UI.
+
+Either way this is local to your box only — it does **not** make the template discoverable by other Unraid users. That requires actually submitting it to the official CA index for review (a forum post or PR to [Squidly271/community.applications](https://github.com/Squidly271/community.applications)), which is a separate, out-of-scope step from this repo.
 
 ## GPU vs CPU-only
 

@@ -66,7 +66,7 @@ This template keeps the Config surface intentionally small — enough to get a w
 
 ## Icon
 
-`templates/modelship.xml` currently references `icon.png` in this repo as a placeholder — it hasn't been added yet, so Unraid will show its generic default icon until one is uploaded.
+`templates/modelship.xml` references [`icon.svg`](icon.svg) in this repo.
 
 ## License
 

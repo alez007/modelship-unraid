@@ -69,6 +69,25 @@ This template keeps the Config surface intentionally small — enough to get a w
 - **Advanced**: metrics port + toggle, `MSHIP_API_KEYS`, `MSHIP_LOG_LEVEL`, and (GPU template only) `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES`.
 - **Not exposed** (production/multi-node knobs that don't matter for a single Unraid container — defaults are fine, and you can still add any of these manually as extra Variables if you need them): gateway name/replicas/concurrency, state store (Redis/file), OpenTelemetry export, syslog log target/format, existing-Ray-cluster attach, Ray session pruning, preflight toggle, request body size limit, Ray head CPU/GPU pinning, Ray dashboard. Plugin backends (Kokoro ONNX, Orpheus, whisper.cpp) need no container-level config at all — they're pulled in automatically based on what your `models.yaml` references.
 
+## Troubleshooting: edits to the container "don't stick"
+
+If you edit the container in Unraid (add an env var, change the models.yaml path) and it looks like your change reverted — or a change you made earlier vanished when you changed something else — **check the running container before assuming the save failed.** The Unraid Docker **Edit** form caches aggressively and frequently shows stale values *after* you click Apply, even though the write already landed on disk (`/boot/config/plugins/dockerMan/templates-user/my-modelship.xml`) and on the live container.
+
+Ground truth is `docker inspect`, which reads the actual running process, not the GUI's cache:
+
+```sh
+docker inspect modelship --format '{{range .Config.Env}}{{println .}}{{end}}'
+```
+
+If that shows your new value, the edit worked — just hard-refresh the Edit page (**Ctrl+Shift+R**) or close and reopen the Docker tab to clear the stale form.
+
+Two things that *do* cause genuine reverts, worth ruling out if `docker inspect` disagrees with what you set:
+
+- **Installed via Community Applications "Private" templates?** With CA's update check enabled, CA can re-merge the source template back over your container — bringing back removed variables and default paths while keeping your custom additions (the tell-tale "the var I deleted came back, but my other edits stayed" pattern). If you hit this, reinstall as a plain Docker container ([Option A](#installing) above): a plain-docker container with an empty `<TemplateURL>` and no CA source has nothing that can silently rewrite your edits.
+- **Leftover `my-*.xml` files** in `templates-user/` from an earlier install can shadow the container you're editing. Keep only the `my-<name>.xml` for containers that actually exist (`docker ps -a`).
+
+Note: `community.applications/private/<repo>/*.xml` is an install-*from* source (a store listing); `templates-user/my-<name>.xml` is the live container's config (what Edit reads and writes). They are not interchangeable — deleting the `my-` file orphans the running container's config rather than "moving" it.
+
 ## Icon
 
 Both templates reference [`icon.png`](icon.png) in this repo. Unraid's Docker template `Icon` field doesn't render SVG (it falls back to a placeholder), so `icon.svg` is kept only as the source design and rasterized to `icon.png` for the templates.

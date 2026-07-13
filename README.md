@@ -71,7 +71,7 @@ This template keeps the Config surface intentionally small — enough to get a w
 
 ## Icon
 
-`templates/modelship.xml` references [`icon.svg`](icon.svg) in this repo.
+Both templates reference [`icon.png`](icon.png) in this repo. Unraid's Docker template `Icon` field doesn't render SVG (it falls back to a placeholder), so `icon.svg` is kept only as the source design and rasterized to `icon.png` for the templates.
 
 ## License
 
